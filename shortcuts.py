@@ -45,6 +45,20 @@ def create_systemd_service(template_path, service_name, context):
     return service_path
 
 
+def create_nginx_config(domain_name, template_path, context):
+    """
+    This creates nginx config file for a domain or subdomain in /etc/nginx/sites-available
+    and also creates a symbolic link in /etc/nginx/sites-enabled.
+    """
+    with open(f"/etc/nginx/sites-available/{domain_name}", 'w') as file:
+                file.write(render_template(template_path, context))
+                os.system(f"sudo ln -s /etc/nginx/sites-available/{domain_name} /etc/nginx/sites-enabled/")
+                restart_systemd_service('nginx.service')
+                os.system('systemctl restart nginx')
+                clear_terminal()
+                print(f"nginx config file created for {domain_name}")
+
+
 def reload_systemd():
     """
     Reload systemd daemon.
@@ -83,3 +97,4 @@ def find_free_port(port_range=(1024, 65535)):
 
 def clear_terminal():
     os.system('clear')
+
