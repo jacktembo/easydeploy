@@ -1,0 +1,21 @@
+[Unit]
+Description={{ description }}
+After=network.target
+
+[Service]
+User={{ user }}
+Group={{ group }}
+WorkingDirectory={{ work_dir }}
+ExecStart={{ runserver_command }}
+Restart=always
+RestartSec=10
+
+# Set project Environment variables
+{% for env in environment_variables %}
+Environment={{ env }}
+{% endfor %}
+
+
+[Install]
+WantedBy=multi-user.target
+
