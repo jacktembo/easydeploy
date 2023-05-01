@@ -1,5 +1,5 @@
 """
-This module allows deploying a generic application for various programming languages.
+This utility module allows deploying a generic application for various programming languages.
 """
 from shortcuts import *
 
@@ -17,7 +17,7 @@ clear_terminal()
 if framework == '1':
     global command
     web_server = get_input("""
-    Choose how you want to deploy:
+    Choose how you want to deploy your Django application:
     1. Gunicorn + letsecrypt SSL
     2. Gunicorn + Nginx + letsencrypt SSL
     3. Gunicorn without SSL
