@@ -32,3 +32,9 @@ server {
 
 }
 
+# Redirect HTTP to HTTPS
+server {
+    listen {{ http_port }}
+    server_name {{ domain_name }};
+    return 301 https://$host$request_uri;
+}

@@ -16,6 +16,7 @@ clear_terminal()
 
 if framework == '1':
     global command
+    global domain_name
     web_server = get_input("""
     Choose how you want to deploy your Django application:
     1. Gunicorn + letsecrypt SSL
@@ -39,24 +40,21 @@ if framework == '1':
         command = f"gunicorn {project_name}.wsgi -b 0.0.0.0:{app_port} --workers 3"
     elif web_server == '4':
         domain_name = get_input('Enter domain name or subdomain:')
-        project_name = get_input('Enter project name:')
         command = f"python3 manage.py runserver 0.0.0.0:{app_port}"
     elif web_server == '5':
         domain_name = get_input('Enter domain name or subdomain:')
-        project_name = get_input('Enter project name:')
         command = f"python3 manage.py runserver 0.0.0.0:{app_port}"
-        
 
     context = {
-                'service_name': get_input('Enter systemd service name:'),
-                'description': get_input('Enter systemd service description:'),
-                'user': get_input('Enter systemd service user: '),
-                'group': get_input('Enter systemd service group: '),
-                'work_dir': get_input('Enter project working directory: '),
-                'runserver_command': command,
-                'domain_name': domain_name, 'is_static_webite': False
-                
-            }
+        'service_name': get_input('Enter systemd service name:'),
+        'description': get_input('Enter systemd service description:'),
+        'user': get_input('Enter systemd service user: '),
+        'group': get_input('Enter systemd service group: '),
+        'work_dir': get_input('Enter project working directory: '),
+        'runserver_command': command,
+        'domain_name': domain_name, 'is_static_webite': False
+
+    }
 
     # Render template and create systemd service file
     template_path = 'templates/generic_systemd.j2'
@@ -72,20 +70,22 @@ if framework == '1':
         if app_port == '443':
             print(f"Congratulations! your application is deployed at https://{context['domain_name']}")
         print(f"Congratulations! your application is deployed at https://{context['domain_name']}:{app_port}")
-        
+
 
     elif web_server == '2' or web_server == '5':
         template_path = 'templates/generic_nginx.j2'
         clear_terminal()
         https_port = get_input('Enter Nginx SSL port:')
+        http_port = get_input('Enter Nginx HTTP port:')
         context['https_port'] = https_port
+        context['http_port'] = http_port
         context['port'] = app_port
         with open(f"/etc/nginx/sites-available/{context['domain_name']}", 'w') as file:
-                file.write(render_template(template_path, context))
-                os.system(f"sudo ln -s /etc/nginx/sites-available/{context['domain_name']} /etc/nginx/sites-enabled/")
-                restart_systemd_service('nginx.service')
-                os.system('systemctl restart nginx')
-                clear_terminal()
+            file.write(render_template(template_path, context))
+            os.system(f"sudo ln -s /etc/nginx/sites-available/{context['domain_name']} /etc/nginx/sites-enabled/")
+            restart_systemd_service('nginx.service')
+            os.system('systemctl restart nginx')
+            clear_terminal()
         if https_port == '443':
             print(f"Congratulations! Your website is deployed at https://{context['domain_name']}")
         print(f"Congratulations! Your website is deployed at https://{context['domain_name']}:{context['https_port']}")
@@ -95,34 +95,30 @@ if framework == '1':
         if app_port == '80':
             print(f"Congratulations! your application is deployed at http://{context['domain_name']}")
         print(f"Congratulations! your application is deployed at http://{context['domain_name']}:{app_port}")
-        
+
 
 
 
 elif framework == '2':
-        deploy_type = get_input("""
+    deploy_type = get_input("""
         Choose how you want to deploy:
         1. Static website with SSL
         """)
-        domain_name = get_input('Enter domain name or sudomain:')
-        template_path = 'templates/generic_nginx.j2'
-        web_root = get_input('Enter absolute path to your website document root: ')
-        if deploy_type == '1':
-            context = {
-                'domain_name': domain_name,
-                'https_port': get_input('Enter nginx ssl port: '),
-                'is_static_website': True,
-                'static_website_root': web_root,
-            }
-            with open(f"/etc/nginx/sites-available/{domain_name}", 'w') as file:
-                file.write(render_template(template_path, context))
-                os.system(f"sudo ln -s /etc/nginx/sites-available/{domain_name} /etc/nginx/sites-enabled/")
-                restart_systemd_service('nginx.service')
-                clear_terminal()
-            if app_port == '443':
-                print(f"Congratulations! Your website is deployed at https://{domain_name}")
-            print(f"Congratulations! Your website is deployed at https://{domain_name}:{context['https_port']}")
-
-        
-
-
+    domain_name = get_input('Enter domain name or sudomain:')
+    template_path = 'templates/generic_nginx.j2'
+    web_root = get_input('Enter absolute path to your website document root: ')
+    if deploy_type == '1':
+        context = {
+            'domain_name': domain_name,
+            'https_port': get_input('Enter nginx ssl port: '),
+            'is_static_website': True,
+            'static_website_root': web_root,
+        }
+        with open(f"/etc/nginx/sites-available/{domain_name}", 'w') as file:
+            file.write(render_template(template_path, context))
+            os.system(f"sudo ln -s /etc/nginx/sites-available/{domain_name} /etc/nginx/sites-enabled/")
+            restart_systemd_service('nginx.service')
+            clear_terminal()
+        if app_port == '443':
+            print(f"Congratulations! Your website is deployed at https://{domain_name}")
+        print(f"Congratulations! Your website is deployed at https://{domain_name}:{context['https_port']}")
