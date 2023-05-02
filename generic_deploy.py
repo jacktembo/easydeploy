@@ -79,6 +79,7 @@ if framework == '1':
         clear_terminal()
         https_port = get_input('Enter Nginx SSL port:')
         context['https_port'] = https_port
+        context['port'] = app_port
         with open(f"/etc/nginx/sites-available/{context['domain_name']}", 'w') as file:
                 file.write(render_template(template_path, context))
                 os.system(f"sudo ln -s /etc/nginx/sites-available/{context['domain_name']} /etc/nginx/sites-enabled/")
